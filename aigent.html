@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Найди баг: тест по HTML</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f6;--card:#fff;--ink:#17212b;--mute:#5d6b7a;--line:#d5dde6;--accent:#0f8b8d;--ok:#2e7d4f;--okbg:#dff2e6;--bad:#c8372d;--badbg:#fbe3e0;--code:#1b2430;--codeink:#dbe5ef;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#18212b;--ink:#e6edf4;--mute:#92a1b1;--line:#2a3644;--accent:#3cc1c3;--ok:#6cc58e;--okbg:#1c3a2a;--bad:#ff7b72;--badbg:#44211f;--code:#0b1017}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#18212b;--ink:#e6edf4;--mute:#92a1b1;--line:#2a3644;--accent:#3cc1c3;--ok:#6cc58e;--okbg:#1c3a2a;--bad:#ff7b72;--badbg:#44211f;--code:#0b1017}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 Manrope,system-ui,sans-serif}
+main{max-width:680px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:28px;line-height:1.15;margin:0 0 6px;font-weight:800}
+.sub{color:var(--mute);margin:0 0 20px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.meta{color:var(--mute);font-size:14px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.q{font-weight:600;font-size:18px;margin:0 0 14px}
+pre{margin:0 0 14px;background:var(--code);color:var(--codeink);border-radius:10px;padding:8px 0;overflow-x:auto;font:400 14px/1.6 'JetBrains Mono',ui-monospace,monospace}
+.ln{display:flex;width:100%;text-align:left;background:none;border:0;color:inherit;font:inherit;padding:0 14px 0 0;cursor:default;white-space:pre}
+.ln b{flex:none;width:40px;text-align:right;padding-right:12px;color:#6f8196;font-weight:400}
+.pick .ln{cursor:pointer}
+.pick .ln:hover{background:rgba(255,255,255,.09)}
+.ln.right{background:rgba(46,160,90,.35)}
+.ln.wrong{background:rgba(220,70,60,.4)}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--okbg)}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.opt:disabled{cursor:default}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.fb{margin-top:16px;border-radius:10px;padding:12px 14px}
+.fb.ok{background:var(--okbg)}.fb.no{background:var(--badbg)}
+.fb strong{display:block;margin-bottom:2px}
+.ai{margin-top:10px;font:600 15px Manrope,sans-serif;background:transparent;color:var(--accent);border:1.5px solid var(--accent);border-radius:10px;padding:8px 14px;cursor:pointer}
+.ai:disabled{opacity:.7;cursor:default}
+.aibox{margin-top:10px;white-space:pre-wrap}
+.next,.again{margin-top:16px;font:600 16px Manrope,sans-serif;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:11px 20px;cursor:pointer}
+:root:not([data-theme="light"]) .next{color:#07121a}
+.score{font-size:48px;font-weight:800;line-height:1;margin:4px 0 8px}
+.rev{border-top:1px solid var(--line);padding:14px 0 0;margin-top:14px}
+.rev p{margin:2px 0}
+.hint{color:var(--mute);font-size:14px;margin:-6px 0 12px}
+</style>
+</head>
+<body>
+<main>
+<h1>Найди баг</h1>
+<p class="sub">7 коротких задач по HTML. После каждого ответа — разбор.</p>
+<div class="bar"><i id="pb" style="width:0"></i></div>
+<div class="meta" id="meta"></div>
+<div class="card" id="box"></div>
+</main>
+<script>
+var Q=[
+{t:"bug",q:"Найдите строку с ошибкой в разметке.",code:["<div>","  <p>Нажмите <b>здесь</p></b>","</div>"],bug:2,
+ e:"Теги должны закрываться в порядке, обратном открытию: сначала </b>, потом </p>. Правильно: <p>Нажмите <b>здесь</b></p>."},
+{t:"opt",q:"Какой тег создаёт ссылку?",code:["<___ href=\"page.html\">Открыть</___>"],o:["a","link","href","url"],a:0,
+ e:"Ссылка — это тег <a> (от anchor). href — это атрибут с адресом, а <link> подключает внешние ресурсы вроде стилей и не показывается на странице."},
+{t:"bug",q:"Одна из картинок не загрузится. Где ошибка?",code:["<img src=\"cat.jpg\" alt=\"Кот\">","<img src=\"bird.jpg\" alt=\"Птица\">","<img href=\"dog.jpg\" alt=\"Пёс\">"],bug:3,
+ e:"У <img> адрес файла задаётся атрибутом src, а не href. href нужен ссылкам <a> и тегу <link>."},
+{t:"opt",q:"Какой атрибут превращает поле в поле для пароля?",code:["<input ___=\"password\">"],o:["type","name","mode","kind"],a:0,
+ e:"Атрибут type задаёт вид поля: text, password, email, number и другие. Для password введённые символы скрываются точками."},
+{t:"bug",q:"В списке есть недопустимый элемент. Найдите его.",code:["<ul>","  <li>HTML</li>","  <p>CSS</p>","  <li>JS</li>","</ul>"],bug:3,
+ e:"Прямыми потомками <ul> могут быть только элементы <li>. Абзац нужно вложить внутрь <li>: <li><p>CSS</p></li>."},
+{t:"opt",q:"Какой тег задаёт главный заголовок страницы?",code:["<___>Мой первый сайт</___>"],o:["h1","head","title","header"],a:0,
+ e:"Главный заголовок внутри страницы — <h1>. <title> лежит в <head> и отображается во вкладке браузера, а <header> — это шапка раздела, а не заголовок."},
+{t:"opt",q:"Что делает тег <br>?",code:["Первая строка<br>Вторая строка"],o:["Делает текст жирным","Переносит текст на новую строку","Рисует горизонтальную линию","Начинает новый раздел"],a:1,
+ e:"<br> (от break) — перенос строки. Парного закрывающего тега у него нет. Горизонтальную линию рисует <hr>, жирный текст делает <strong>."}
+];
+var i,score,miss,done,box=document.getElementById("box");
+function el(h){return h.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function start(){i=0;score=0;miss=[];show()}
+function codeHtml(q,pick){return '<pre class="'+(pick?"pick":"")+'">'+q.code.map(function(l,k){return '<button class="ln" data-n="'+(k+1)+'" '+(pick?"":"tabindex=-1 ")+'><b>'+(k+1)+'</b>'+(el(l)||" ")+'</button>'}).join("")+'</pre>'}
+function show(){
+ var q=Q[i];done=false;
+ document.getElementById("pb").style.width=(i/Q.length*100)+"%";
+ document.getElementById("meta").textContent="Вопрос "+(i+1)+" из "+Q.length+" · верно: "+score;
+ var h='<p class="q">'+el(q.q)+'</p>'+codeHtml(q,q.t==="bug");
+ if(q.t==="bug")h+='<p class="hint">Нажмите на строку, в которой ошибка.</p>';
+ else h+='<div class="opts">'+q.o.map(function(o,k){return '<button class="opt" data-k="'+k+'">'+el(o)+'</button>'}).join("")+'</div>';
+ h+='<div id="fb"></div>';
+ box.innerHTML=h;
+ if(q.t==="bug")box.querySelectorAll(".ln").forEach(function(b){b.onclick=function(){answer(+b.dataset.n,b)}});
+ else box.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){answer(+b.dataset.k,b)}});
+}
+function answer(v,node){
+ if(done)return;done=true;var q=Q[i];
+ var ok=q.t==="bug"?v===q.bug:v===q.a;
+ if(q.t==="bug"){
+  box.querySelectorAll(".ln").forEach(function(b){b.onclick=null});
+  box.querySelector("pre").classList.remove("pick");
+  box.querySelector('.ln[data-n="'+q.bug+'"]').classList.add("right");
+  if(!ok)node.classList.add("wrong");
+ }else{
+  box.querySelectorAll(".opt").forEach(function(b){b.disabled=true});
+  box.querySelector('.opt[data-k="'+q.a+'"]').classList.add("right");
+  if(!ok)node.classList.add("wrong");
+ }
+ if(ok)score++;else miss.push({q:q,v:v});
+ var last=i===Q.length-1;
+ var lead=ok?"Верно!":(q.t==="bug"?"Не та строка. Ошибка в строке "+q.bug+".":"Неверно. Правильный ответ: "+q.o[q.a]+".");
+ document.getElementById("fb").innerHTML='<div class="fb '+(ok?"ok":"no")+'" role="status"><strong>'+lead+'</strong>'+(ok?el(q.e):'<button class="ai" id="ai">Объяснить ошибку</button><div class="aibox" id="aibox" hidden></div>')+'</div><button class="next" id="nx">'+(last?"Показать результат":"Дальше")+'</button>';
+ document.getElementById("nx").onclick=function(){i++;last?finish():show()};
+ if(!ok){var ab=document.getElementById("ai");ab.onclick=function(){explain(q,v,ab,document.getElementById("aibox"))};ab.focus()}
+ else document.getElementById("nx").focus();
+}
+var gen=null;
+async function local(prompt,out){
+ if(!gen){
+  out.textContent="Загружаю модель в браузер, это один раз…";
+  var T=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3");
+  gen=await T.pipeline("text-generation","onnx-community/Qwen2.5-0.5B-Instruct",{dtype:"q4",device:navigator.gpu?"webgpu":"wasm",progress_callback:function(p){if(p.status==="progress")out.textContent="Загружаю модель: "+Math.round(p.progress)+"%"}});
+ }
+ out.textContent="Думаю…";
+ var res=await gen([{role:"system",content:"Ты терпеливый преподаватель HTML. Отвечай по-русски, коротко и просто."},{role:"user",content:prompt}],{max_new_tokens:220,do_sample:false});
+ return res[0].generated_text.at(-1).content;
+}
+async function explain(q,v,btn,out){
+ btn.disabled=true;btn.textContent="ИИ думает…";out.hidden=false;out.textContent="Думаю…";
+ var yours=q.t==="bug"?"строка "+v:q.o[v],right=q.t==="bug"?"строка "+q.bug:q.o[q.a];
+ var prompt="Ты преподаватель HTML для новичков. Ученик ошибся в тесте. Объясни простым языком по-русски, в 3–5 предложениях: что не так в коде, почему его ответ неверный и как правильно. Без заголовков и списков.\n\nВопрос: "+q.q+"\nКод:\n"+q.code.join("\n")+"\nОтвет ученика: "+yours+"\nПравильный ответ: "+right+"\nСправка: "+q.e;
+  var sm=null;try{sm=window.claude&&await window.claude.use("sample")}catch(e){}
+ try{
+  if(sm){var r=await sm(prompt,{cache:false,onText:function(x){out.textContent=x.text}});out.textContent=r.text}
+  else{var t=await local(prompt,out);if(!t||t.length<20)throw 0;out.textContent=t}
+ }catch(e){out.textContent=q.e}
+ btn.hidden=true;
+}
+function finish(){
+ document.getElementById("pb").style.width="100%";
+ document.getElementById("meta").textContent="Тест пройден";
+ var n=Q.length,w=score===n?"Без единой ошибки.":score>=5?"Хороший результат.":"Есть что повторить — разбор ниже.";
+ var h='<div class="score">'+score+' из '+n+'</div><p>'+w+'</p>';
+ if(miss.length){h+='<p><strong>Разбор ошибок</strong></p>'+miss.map(function(m){return '<div class="rev"><p><strong>'+el(m.q.q)+'</strong></p><p>'+el(m.q.e)+'</p></div>'}).join("")}
+ h+='<button class="again" id="ag">Пройти заново</button>';
+ box.innerHTML=h;
+ document.getElementById("ag").onclick=start;
+}
+start();
+</script>
+</body>
+</html>
